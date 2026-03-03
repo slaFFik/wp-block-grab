@@ -1,0 +1,46 @@
+{
+	"name": "wp-block-grab",
+	"version": "0.1.0",
+	"description": "AI-ready context extraction for WordPress Block Editor - helps AI coding agents identify exact source file and line numbers",
+	"author": "Slava Abakumov",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/slaFFik/wp-block-grab.git"
+	},
+	"bugs": {
+		"url": "https://github.com/slaFFik/wp-block-grab/issues"
+	},
+	"homepage": "https://github.com/slaFFik/wp-block-grab#readme",
+	"keywords": [
+		"wordpress",
+		"gutenberg",
+		"block-editor",
+		"ai",
+		"developer-tools",
+		"source-tracking",
+		"babel-plugin"
+	],
+	"bin": {
+		"wp-block-grab": "./bin/wp-block-grab.js"
+	},
+	"files": [
+		"bin/",
+		"babel/",
+		"config/",
+		"runtime/"
+	],
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"scripts": {
+		"test": "wp-scripts test-unit-js",
+		"test:watch": "wp-scripts test-unit-js --watch"
+	},
+	"peerDependencies": {
+		"@wordpress/scripts": ">=26.0.0"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.0.0"
+	}
+}
