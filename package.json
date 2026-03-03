@@ -1,6 +1,6 @@
 {
 	"name": "wp-block-grab",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "AI-ready context extraction for WordPress Block Editor - helps AI coding agents identify exact source file and line numbers",
 	"author": "Slava Abakumov",
 	"license": "MIT",
@@ -28,14 +28,16 @@
 		"bin/",
 		"babel/",
 		"config/",
-		"runtime/"
+		"runtime/",
+		"!**/*.test.js"
 	],
 	"engines": {
 		"node": ">=18.0.0"
 	},
 	"scripts": {
 		"test": "wp-scripts test-unit-js",
-		"test:watch": "wp-scripts test-unit-js --watch"
+		"test:watch": "wp-scripts test-unit-js --watch",
+		"prepublishOnly": "npm test"
 	},
 	"peerDependencies": {
 		"@wordpress/scripts": ">=26.0.0"
