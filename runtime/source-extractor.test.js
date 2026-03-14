@@ -231,6 +231,8 @@ describe( 'getSourceFromElement', () => {
 
 		const result = getSourceFromElement( el );
 		expect( result.fileName ).toBe( 'plugins/p/src/button.js' );
+		expect( result.lineNumber ).toBe( 5 );
+		expect( result.columnNumber ).toBe( 3 );
 		expect( result.componentName ).toBe( 'Button' );
 	} );
 

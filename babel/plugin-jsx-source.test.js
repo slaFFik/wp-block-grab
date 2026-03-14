@@ -29,13 +29,13 @@ function transform( code, opts = {} ) {
 describe( 'plugin-jsx-source', () => {
 	it( 'should add data-wp-source to host elements', () => {
 		const code = transform( 'const el = <div className="test" />;' );
-		expect( code ).toContain( 'data-wp-source' );
+		expect( code ).toMatch( /data-wp-source.*src\/edit\.js:1:\d+/ );
 		expect( code ).not.toContain( 'data-wp-component-source' );
 	} );
 
 	it( 'should add data-wp-component-source to components', () => {
 		const code = transform( 'const el = <Button label="ok" />;' );
-		expect( code ).toContain( 'data-wp-component-source' );
+		expect( code ).toMatch( /data-wp-component-source.*src\/edit\.js:1:\d+/ );
 		expect( code ).not.toContain( 'data-wp-source' );
 	} );
 
@@ -108,14 +108,14 @@ describe( 'plugin-jsx-source', () => {
 
 	it( 'should work with self-closing elements', () => {
 		const code = transform( '<img src="test.png" />;' );
-		expect( code ).toContain( 'data-wp-source' );
+		expect( code ).toMatch( /data-wp-source.*src\/edit\.js:1:\d+/ );
 	} );
 
 	it( 'should work with elements that have children', () => {
 		const code = transform( '<div><span>text</span></div>;' );
 		// Both div and span should get data-wp-source
 		const matches = code.match( /data-wp-source/g );
-		expect( matches.length ).toBeGreaterThanOrEqual( 2 );
+		expect( matches ).toHaveLength( 2 );
 	} );
 
 	it( 'should not instrument fragments', () => {

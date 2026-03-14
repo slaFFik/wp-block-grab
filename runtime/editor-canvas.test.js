@@ -42,12 +42,13 @@ describe( 'getEditorCanvasDocument', () => {
 	it( 'should return contentDocument when accessible', () => {
 		const iframe = document.createElement( 'iframe' );
 		iframe.name = 'editor-canvas';
+		// Mock contentDocument to a known value
+		const fakeDoc = document.implementation.createHTMLDocument( 'test' );
+		Object.defineProperty( iframe, 'contentDocument', {
+			get: () => fakeDoc,
+		} );
 		document.body.appendChild( iframe );
-		// jsdom makes contentDocument accessible
-		const doc = getEditorCanvasDocument();
-		// In jsdom, contentDocument might be null for dynamically created iframes
-		// The important thing is it doesn't throw
-		expect( doc === null || typeof doc === 'object' ).toBe( true );
+		expect( getEditorCanvasDocument() ).toBe( fakeDoc );
 	} );
 
 	it( 'should return null on cross-origin (simulated)', () => {
