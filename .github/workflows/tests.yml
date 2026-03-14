@@ -3,13 +3,12 @@ name: Tests
 on:
   workflow_dispatch:
   push:
-    paths:
-      - '**/*.js'
-      - '**/*.cjs'
+    branches: [main]
   pull_request:
     paths:
       - '**/*.js'
       - '**/*.cjs'
+      - package-lock.json
 
 jobs:
   test:
