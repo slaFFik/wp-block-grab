@@ -1,6 +1,6 @@
 {
 	"name": "wp-block-grab",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "AI-ready context extraction for WordPress Block Editor - helps AI coding agents identify exact source file and line numbers",
 	"author": "Slava Abakumov",
 	"license": "MIT",
@@ -22,7 +22,7 @@
 		"babel-plugin"
 	],
 	"bin": {
-		"wp-block-grab": "./bin/wp-block-grab.js"
+		"wp-block-grab": "bin/wp-block-grab.js"
 	},
 	"files": [
 		"bin/",
