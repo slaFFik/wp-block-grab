@@ -43,6 +43,6 @@
 		"@wordpress/scripts": ">=26.0.0"
 	},
 	"devDependencies": {
-		"@wordpress/scripts": "^30.0.0"
+		"@wordpress/scripts": "^32.0.0"
 	}
 }
