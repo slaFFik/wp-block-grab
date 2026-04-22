@@ -34,7 +34,7 @@ Two complementary components:
 - Signal-aware exit codes (128 + signal number) via shared `forwardChildExit()` helper
 
 ### Config — `config/`
-- `webpack.config.cjs` — Extends `@wordpress/scripts` default config, injects runtime entry (editor entries only, skips entries matching `^(view|render|frontend|script)([-.]|$)`), handles both function and object entry shapes, adds Babel plugin to all babel-loader instances via recursive rule traversal (walks `use`, `oneOf`, and nested `rules`)
+- `webpack.config.cjs` — Extends `@wordpress/scripts` default config, injects runtime entry (editor entries only, skips entries matching `^(view|render|frontend|script)([-.]|$)`), handles both function and object entry shapes, adds Babel plugin to all babel-loader instances via recursive rule traversal (walks `use`, `oneOf`, and nested `rules`), and carves the runtime directory out of babel-loader's `/node_modules/` exclude so raw JSX in `runtime/` transpiles when consumed from `node_modules/wp-block-grab/runtime/` (emits a warn if no matching rule is found)
 
 ## Key Constraints
 
@@ -53,7 +53,17 @@ Two complementary components:
 
 ## Development
 
-This package has no build step or linter configured yet. The code is authored directly as shipped. To test manually, install it as a dev dependency in a WordPress block plugin project and run `wp-block-grab start`.
+No build step or linter is configured. Runtime, Babel plugin, CLI, and webpack-config files are authored directly and published as-is (tests are excluded via `files` in `package.json`).
+
+To test changes against a real consumer plugin, add a `file:` dependency in the consumer's `package.json`:
+
+```json
+"devDependencies": {
+  "wp-block-grab": "file:../../wp-block-grab"
+}
+```
+
+Then run `npm install && npm start` in the consumer. **Important:** npm *copies* `file:` dependencies into `node_modules` rather than symlinking, so after editing `wp-block-grab` you must re-run `npm install` (or `rm -rf node_modules/wp-block-grab && npm install`) to pick up changes.
 
 ### Testing
 
@@ -67,4 +77,17 @@ npm test -- --coverage  # Run with coverage report
 
 Test files live next to their source files (`*.test.js`). The test suite covers pure-function modules: `store`, `source-extractor`, `output-formatter`, `editor-canvas`, `babel/plugin-jsx-source`, and `config/webpack-utils`.
 
-`config/webpack-utils.cjs` contains utility functions extracted from `webpack.config.cjs` for testability (`isFrontendEntry`, `injectRuntime`, `addBabelPluginToLoader`, `findAndPatchBabelLoader`).
+`config/webpack-utils.cjs` contains utility functions extracted from `webpack.config.cjs` for testability (`isFrontendEntry`, `injectRuntime`, `addBabelPluginToLoader`, `findAndPatchBabelLoader`, `patchExcludeForRuntime`).
+
+Jest and Babel are configured at the repo root:
+- `jest.config.js` — `testEnvironment: 'jsdom'`, `testMatch: <rootDir>/**/*.test.js`, babel-jest transform, no `node_modules` transform
+- `babel.config.js` — uses `@wordpress/babel-preset-default` for test-time transforms only. The shipped runtime is untranspiled; it relies on the consumer's `@wordpress/scripts` Babel pipeline at build time (which is why `config/webpack.config.cjs` has to carve `runtime/` out of babel-loader's `/node_modules/` exclude).
+
+## CI & Release
+
+Two GitHub Actions workflows under `.github/workflows/`:
+
+- `tests.yml` — Runs `npm test` on push to `main` and on PRs touching `*.js`/`*.cjs`.
+- `publish.yml` — Triggered by pushing a semver tag matching `[0-9]*.[0-9]*.[0-9]*` (or via `workflow_dispatch`). Uses Node 22 with npm trusted publishing (OIDC, `id-token: write`) and `npm publish --provenance`. `prepublishOnly` in `package.json` runs the test suite first.
+
+Release flow: bump `version` in `package.json`, commit, then `git tag X.Y.Z && git push origin X.Y.Z`. The tag push triggers the CI-driven publish — do not `npm publish` locally.
