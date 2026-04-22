@@ -12,7 +12,8 @@ const wpScriptsConfigPath = require.resolve( '@wordpress/scripts/config/webpack.
 } );
 const defaultConfig = require( wpScriptsConfigPath );
 
-const { injectRuntime, findAndPatchBabelLoader } = require( './webpack-utils.cjs' );
+const path = require( 'path' );
+const { injectRuntime, findAndPatchBabelLoader, patchExcludeForRuntime } = require( './webpack-utils.cjs' );
 
 const runtimeEntryPath = process.env.WP_BLOCK_GRAB_RUNTIME;
 const babelPluginPath = process.env.WP_BLOCK_GRAB_BABEL_PLUGIN;
@@ -47,6 +48,16 @@ if ( defaultConfig.module && defaultConfig.module.rules ) {
 		console.warn(
 			'\x1b[33m%s\x1b[0m',
 			'wp-block-grab: Could not find babel-loader in webpack config. Source tracking will not work.'
+		);
+	}
+
+	// Allow runtime directory through babel-loader's node_modules exclude
+	const runtimeDir = path.resolve( __dirname, '..', 'runtime' );
+	const excludePatched = patchExcludeForRuntime( defaultConfig.module.rules, runtimeDir );
+	if ( ! excludePatched ) {
+		console.warn(
+			'\x1b[33m%s\x1b[0m',
+			'wp-block-grab: Could not patch babel-loader exclude for the runtime directory. JSX in runtime/ may fail to transpile.'
 		);
 	}
 }

@@ -7,6 +7,7 @@ const {
 	injectRuntime,
 	addBabelPluginToLoader,
 	findAndPatchBabelLoader,
+	patchExcludeForRuntime,
 } = require( './webpack-utils.cjs' );
 
 // ── isFrontendEntry ────────────────────────────────────────────────
@@ -170,5 +171,106 @@ describe( 'findAndPatchBabelLoader', () => {
 			{ oneOf: [ { loader: 'file-loader' } ] },
 		];
 		expect( findAndPatchBabelLoader( rules, pluginPath ) ).toBe( false );
+	} );
+} );
+
+// ── patchExcludeForRuntime ────────────────────────────────────────
+
+describe( 'patchExcludeForRuntime', () => {
+	const runtimeDir = '/abs/path/to/wp-block-grab/runtime';
+
+	it( 'should patch exclude on babel-loader rule with /node_modules/ exclude', () => {
+		const rules = [
+			{
+				exclude: /node_modules/,
+				use: [ { loader: 'babel-loader', options: {} } ],
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( true );
+		expect( rules[ 0 ].exclude ).toEqual( {
+			and: [ /node_modules/ ],
+			not: [ runtimeDir ],
+		} );
+	} );
+
+	it( 'should not patch rules without babel-loader', () => {
+		const rules = [
+			{
+				exclude: /node_modules/,
+				use: [ { loader: 'css-loader' } ],
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( false );
+		expect( rules[ 0 ].exclude ).toEqual( /node_modules/ );
+	} );
+
+	it( 'should not patch babel-loader rules without /node_modules/ exclude', () => {
+		const rules = [
+			{
+				exclude: /\.test\.js$/,
+				use: [ { loader: 'babel-loader' } ],
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( false );
+		expect( rules[ 0 ].exclude ).toEqual( /\.test\.js$/ );
+	} );
+
+	it( 'should not patch babel-loader rules with no exclude', () => {
+		const rules = [
+			{
+				use: [ { loader: 'babel-loader' } ],
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( false );
+	} );
+
+	it( 'should recurse into oneOf', () => {
+		const rules = [
+			{
+				oneOf: [
+					{
+						exclude: /node_modules/,
+						use: [ { loader: 'babel-loader' } ],
+					},
+				],
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( true );
+		expect( rules[ 0 ].oneOf[ 0 ].exclude ).toEqual( {
+			and: [ /node_modules/ ],
+			not: [ runtimeDir ],
+		} );
+	} );
+
+	it( 'should recurse into nested rules', () => {
+		const rules = [
+			{
+				rules: [
+					{
+						exclude: /node_modules/,
+						use: [ { loader: 'babel-loader' } ],
+					},
+				],
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( true );
+		expect( rules[ 0 ].rules[ 0 ].exclude ).toEqual( {
+			and: [ /node_modules/ ],
+			not: [ runtimeDir ],
+		} );
+	} );
+
+	it( 'should handle rule.loader string form', () => {
+		const rules = [
+			{
+				exclude: /node_modules/,
+				loader: 'babel-loader',
+			},
+		];
+		expect( patchExcludeForRuntime( rules, runtimeDir ) ).toBe( true );
+		expect( rules[ 0 ].exclude ).toEqual( {
+			and: [ /node_modules/ ],
+			not: [ runtimeDir ],
+		} );
 	} );
 } );
